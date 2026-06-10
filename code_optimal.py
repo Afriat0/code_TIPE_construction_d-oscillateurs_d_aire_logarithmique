@@ -1244,7 +1244,7 @@ def ligne_a_rle(l):
     return ''.join(r)
 
 def matrix_a_rle(l1, en_tete=True, fin=True):
-    l=simplifie_la_grille(l)
+    l=simplifie_la_grille(l1)
     n = len(l)
     m = len(l[0])
     r = []
