@@ -1,5 +1,7 @@
-print("Bienvenue! \nCe code permet de generer des oscillateurs de période p>60 et des canons de période p>68 de manière efficace au sens que leur aire est en O(log(p)).\nPour l'utiliser, on recommande l'utilisation de pyperclip ou autre afin de faciliter la copie des figures générées pour les visualiser via d'autres outils.\nDans ce programme, on representre une figure par une matrice, le résultat d'une fonction oscillateur et canon sera donc une matrice. \nAfin de visualiser une figure, il convient de faire \nl=fonction(periode) \nx=matrice_a_rle(l)\nIl suffit alors de copier x qui est un string et de le coller à l'adresse https://lazyslug.com/, ou sur golly installable via https://golly.sourceforge.io/, afin de visualiser la figure et de la voir évoluer.\nVoici les fonctions disponibles:\n  -oscillateur_naif et canon_naif pour la solution naïve.\n  -oscillateur_booste_puissance_2 et canon_booste_puissance_2, ainsi que\n  -oscillateur_booste_puissance_2_compact et canon_booste_puissance_2_compact pour la solution puissance 2\n  -oscillateur_booste_max et canon_booste_max pour la solution boostée\n  -oscillateur_optimal et canon_optimal pour la solution optimale.\nBonne utilisation! Le code prend un peu de temps pour compiler afin de génerer un dictionnaire, mais ca devrait finir dans un instant")
+print("Bienvenue! \nCe code permet de generer des oscillateurs de période p>60 et des canons de période p>68 de manière efficace au sens que leur aire est en O(log(p)).\nPour l'utiliser, on recommande l'utilisation de pyperclip ou autre afin de faciliter la copie des figures générées pour les visualiser via d'autres outils.\nDans ce programme, on representre une figure par une matrice, le résultat d'une fonction oscillateur et canon sera donc une matrice. \nAfin de visualiser une figure, il convient de faire \nl=fonction(periode) \nx=matrice_a_rle(l)\nIl suffit alors de copier x qui est un string et de le coller à l'adresse https://lazyslug.com/, ou sur golly installable via https://golly.sourceforge.io/, afin de visualiser la figure et de la voir évoluer.\nVoici les fonctions disponibles:\n  -oscillateur_naif et canon_naif pour la solution naïve.\n  -oscillateur_booste_puissance_2 et canon_booste_puissance_2, ainsi que\n  -oscillateur_booste_puissance_2_compact et canon_booste_puissance_2_compact pour la solution puissance 2\n  -oscillateur_booste_max et canon_booste_max pour la solution boostée\n  -oscillateur_optimal et canon_optimal pour la solution optimale.\n\nBonne utilisation! Le code prend un peu de temps pour compiler afin de génerer un dictionnaire, mais ca devrait finir dans un instant")
+
 import math
+
 """On accéde aux listes encodant les figures que je souhaite traiter.
 Ces dernieres sont:
     Des conduits de Herschel, representés par une lettre indiquant la rotation qu'ils effectuent, R pour Right, L pour Left et F pour Forward, et le temps qu'ils prennent a modifier le Herschel.
@@ -109,6 +111,8 @@ conduit190={"droit":R190,"dx,dy":(17,24),"rotation":"droite","positionne":(-18,1
 """liste_de_conduit a pour seul but de rassembler tout ces conduit, pour des raisons de lisibilité"""
 
 liste_de_conduit={64:conduit64,112:conduit112,116:conduit116,117:conduit117,154:conduit154,282:conduit282,155:conduit154degun,190:conduit190,"semisnark":conduitsemisnark,"semisnarkrenverse":conduitsemisnarkrenverse,"snark":conduitsnark,"snarkrenverse":conduitsnarkrenverse,"semisnarkactif":conduitsemisnarkactif,"semisnarkrenverseactif":conduitsemisnarkrenverseactif,"gadgeton":conduitgadget_on,"gadgetoff":conduitgadget_off,"gadgetrenverseon":conduitgadget_renverse_on,"gadgetrenverseoff":conduitgadget_renverse_off,"syringe":conduitsyringe,"h_to_g":conduith_to_g,"mega_bistable":conduitmega_bistable,"mega_bistable_decale":conduitmega_bistable_decale,"mega_bistable_sans_sortie":conduitmega_bistable_sans_sortie,"mega_bistable_decale_sans_sortie":conduitmega_bistable_decale_sans_sortie}
+
+#Quelques opérations primordiales
 
 """place_une_figure prend en entrée une grille l, une figure, la position où le haut gauche de cette figure doit se trouver dans la grille ainsi que son orientation representée par un string r, et ajoute cette figure en modifiant l en consequence"""
 
@@ -241,7 +245,7 @@ def tourner_gauche(l:list[list[int]])->list[list[int]]:
 
 """simplifie_la_grille prend en entrée une grille l et renvoie cette même grille apres avoir rogné les bords jusqu'à trouver une cellule vivante, sans modifier la grille en entrée"""
 
-def simplifie_la_grille(l):
+def simplifie_la_grille(l,suivi=False):
     minx,maxx,miny,maxy=len(l),0,len(l[0]),0
     for i in range(min(len(l),5000)):
         for j in range(len(l[0])):
@@ -260,9 +264,8 @@ def simplifie_la_grille(l):
     l1=[]
     for i in range(minx,maxx+1):
         l1.append([l[i][j] for j in range(miny,maxy+1)])
-        if i%10**5==0:
+        if i%10**5==0 and suivi:
             print(i,end=",")
-    print("")
     return l1
 
 """taille_de_oscillateur_de_constantes evalue la taille de l'oscillateur cree par la solution naive associé à k1,k2,k3,A et B"""
@@ -291,6 +294,7 @@ def taille_de_oscillateur_de_constantes(k1:int,k2:int,k3:int,A:int,B:int)->(int,
     h1=120+droite_112*33+droit_190*24+droit_64*11+droit_117*40+droite_117*6+droit_116*32+droite_116*-1+droit_154*50
     return h0,h1
 
+#évolution du jeu de la
 
 """etape_du_jeu simule une étape elementaire dans le jeu de la vie, en renvoyant l'état de la cellule
 d'emplacement i,j dans la grille l aprés un tick"""
@@ -389,8 +393,9 @@ def remplir_le_circuit_avec_a_herschels(l:list[list[int]],p:int,a:int,haut_gauch
     for i in range(len(herschel)):
         for j in range(len(herschel[0])):
             l[h[0]+i][h[1]+j] = herschel[i][j]
-    #print("les herschels ont été placés!")
     return None
+
+#Début du code naïf
 
 """choix_preferentiel_du_prohain_conduit_Forward prend en entrée une grille l, un haout_gauche, une orientation r et trois entiers a154, a116 et a117, et appele avancer pour le conduit F117 si a117>0, sinon pour le conduit F154 si a154>0 et sinon pour le conduit 116. elle renvoie alors le nouveau haut_gauche, ainsi que a154, a117 et a116 actualisés en diminuant le a de la figure ajoutée"""
 
@@ -571,6 +576,7 @@ def canon_naif(p):
                 l[i][j]=0
         return l
 
+#code puissance 2
 """canon_booste_puissance_2 prend en entree un entier p et un booléen ind, et renvoie une grille contenant un oscillateur de période P et m Semi_Snark chainé en sorte que p=P*2^m.
 Si ind vaut True, la position et l'orientation d'un glider qui a passé tout les Semi_Snark est egalement renvoyée, permettant de rajouter un eater à cet emplacement"""
 
@@ -674,6 +680,7 @@ def oscillateur_booste_puissance_2_compact(p):
     positionner_un_conduit(l,haut_gauche,r,conduiteater)
     return l
 
+#Code des multiplicateurs de période, pour les solutions boostée et optimale
 """ecriture_binaire prend en entree un entier x et renvoie sous forme de liste l'ecriture de x en  binaire"""
 
 def ecriture_binaire(x):
@@ -773,6 +780,8 @@ def cherche_d_evitant_un_recouvrement_exhaustif(p,a,nb=1000):
             return d
     return -20
 
+#Code boosté
+
 """touve un diviseur de p supérieur à 199 car empiriquement pour periode>199 et a entier, cherche_d_evitant_un_recouvrement_exhaustif(periode,a) trouve un d fonctionel"""
 
 def plus_petit_facteur_suffisament_grand(p):
@@ -791,13 +800,15 @@ def canon_booste_max(p,a=-1,d=-1):
         return glider
     if p<300:
         return canon_naif(p)
+    i=p
     if a==-1:
         a=plus_petit_facteur_suffisament_grand(p)
+        i=p//a
     if a==1:
         return canon_naif(p)
     if d==-1:
-        d=cherche_d_evitant_un_recouvrement_exhaustif((p//a),a)
-    l=canon_naif(p//a)
+        d=cherche_d_evitant_un_recouvrement_exhaustif(i,a)
+    l=canon_naif(i)
     l=[[0 for i in range(len(l[0]))] for j in range(50+d+59*(int(math.log2(a))+1))]+l
     n=d+100-len(l[0])
     haut_gauche,r=(25+50+d+59*(int(math.log2(a))+1),55+75),"a l'envers"
@@ -817,13 +828,15 @@ def oscillateur_booste_max(p,a=-1,d=-1):
         return oscillateur_naif(p)
     if p<300:
         return oscillateur_naif(p)
+    i=p
     if a==-1:
         a=plus_petit_facteur_suffisament_grand(p)
+        i=p//a
     if a==1:
         return oscillateur_naif(p)
     if d==-1:
-        d=cherche_d_evitant_un_recouvrement_exhaustif((p//a),a)
-    l=canon_naif(p//a)
+        d=cherche_d_evitant_un_recouvrement_exhaustif(i,a)
+    l=canon_naif(i)
     l=[[0 for i in range(len(l[0]))] for j in range(50+d+59*(int(math.log2(a))+1))]+l
     n=d+100-len(l[0])
     haut_gauche,r=(25+50+d+59*(int(math.log2(a))+1),55+75),"a l'envers"
@@ -848,7 +861,7 @@ def aire_booste_max(p,a=-1,Id=False,k1=-1,k2=-1,k3=-1,A=-1,B=-1,d=-1):
     if p<69:
         print("oops, la periode doit etre supperieure a 69!")
         return 0
-    if p<272:
+    if p<300:
         return aire_naive(p)
     if a==-1:
         a=plus_petit_facteur_suffisament_grand(p)
@@ -868,6 +881,8 @@ def aire_booste_max(p,a=-1,Id=False,k1=-1,k2=-1,k3=-1,A=-1,B=-1,d=-1):
     if Id:
         return x,y,d
     return x,y
+
+#Code optimal
 
 """trier_l1_selon_l2 prend en entrée deux listes l1,l2 et renvoie (sans la modifier) la liste l1 triée selon l2"""
 
@@ -1062,7 +1077,7 @@ def canon_optimal(p):
 
 """oscillateur_optimal prend en entrée un entier p et renvoie un oscillateur de période p en temps et taille logarithmique"""
 
-def oscillateur_optimal(p):
+def oscillateur_optimal(p,suivi=False):
     if p>=2000:
         x=recherche_exhautsive_de_constantes_pour_optimal(p)
         if x==False:
@@ -1079,10 +1094,10 @@ def oscillateur_optimal(p):
         x,y,d=aire_booste_max(periode_apparente,multiplier,True,k1,k2,k3,A,B)
         x,y=x+400,y+300
         l=[]
-        print("goal=",x,"x",y)
+        print("taille de la figure=",x,"x",y,flush=True)
         for i in range(x):
             l.append([0 for i in range(y)])
-            if i%10**4==0:
+            if i%10**4==0 and suivi:
                 print(i,end=",",flush=True)
         haut_gauche=(210+d+59*(int(math.log2(multiplier))+1),60+max(0,d-50))
         x2,y2=haut_gauche
@@ -1223,6 +1238,9 @@ def aire_optimale_a_peu_pres(p,x):
     x,y=x+400,y+300
     return x,y
 
+
+#Transformation matrice à RLE et matrice à image
+
 """ligne_a_rle puis matrix_a_rle ont pour but de transformer une grille l de format matrice en sa representation rle qui est la representation canonique, car étant plus compacte"""
 
 def ligne_a_rle(l):
@@ -1252,8 +1270,6 @@ def matrix_a_rle(l1, en_tete=True, fin=True):
     if en_tete:
         r.append(f"x = {m}, y = {n}, rule=B3/S23\n")
     for i, row in enumerate(l[:-1]):
-        if i%10**5==0:
-            print(i,end=",",flush=True)
         a=ligne_a_rle(row)
         compteur+=len(a)
         r.append(a)
